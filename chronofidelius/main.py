@@ -1,4 +1,4 @@
-from unigram_frequencies import all_unigrams_frequencies
+from .unigram_frequencies import all_unigrams_frequencies
 from collections import defaultdict
 import random
 import string

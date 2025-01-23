@@ -1,5 +1,5 @@
 import unittest
-from main import ChronoFidelius
+from __init__ import ChronoFidelius
 
 class TestChronoFidelius(unittest.TestCase):
 
