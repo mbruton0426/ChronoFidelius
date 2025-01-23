@@ -43,22 +43,17 @@ cf = ChronoFidelius("Hello, World!")
 ```
 
 Optional Parameters: initialization
-    - set_seed (int, optional): A seed value for reproducibility of random operations. Default is None
-    - include_errors (bool, optional): If True, introduces errors (e.g., additions, deletions, doubles) into
-    the plaintext. Default is False
-    - error_type (str, optional): Specifies the type of error to introduce. Valid options are:
-        - "additions": Adds random characters
-        - "deletions": Removes characters
-        - "doubles": Doubles characters
-        - "all": Randomly selects between "additions", "deletions", or "doubles"
-        Must be set if `include_errors` is True. Default is None
-    - error_frequency (float, optional): Frequency of errors in the plaintext (0–1). For example, 0.05
-    introduces errors to 5% of the text. Default is 0.05
-    - include_spacing (bool, optional): If True, retains spaces and line breaks during formatting. Default is
-    False
-    - max_length (int, optional): Maximum length of the formatted plaintext or chunks. Default is 200
-    - set_punctuation (str, optional): Specifies the set of punctuation characters to remove. Default is
-    string.punctuation
+- **set_seed (int, optional)**: A seed value for reproducibility of random operations. Default is None
+- **include_errors (bool, optional)**: If True, introduces errors (e.g., additions, deletions, doubles) into the plaintext. Default is False
+- **error_type (str, optional)**: Specifies the type of error to introduce. Must be set if `include_errors` is True. Default is None. Valid options are:
+        - **"additions"**: Adds random characters
+        - **"deletions"**: Removes characters
+        - **"doubles"**: Doubles characters
+        - **"all"**: Randomly selects between "additions", "deletions", or "doubles"
+- **error_frequency (float, optional)**: Frequency of errors in the plaintext (0–1). For example, 0.05 introduces errors to 5% of the text. Default is 0.05
+- **include_spacing (bool, optional)**: If True, retains spaces and line breaks during formatting. Default is False
+- **max_length (int, optional)**: Maximum length of the formatted plaintext or chunks. Default is 200
+- **set_punctuation (str, optional)**: Specifies the set of punctuation characters to remove. Default is string.punctuation
 
 ### Encrypting Plaintexts
 Plaintexts can be encrypted with: 
@@ -71,15 +66,15 @@ This automatically encrypts plaintext(s) according to every possible option base
 cf.pt_ct_dict
 ```
 Optional Parameters: encrypt_homophonic()
-    - key_type (str): The type of encryption key ("even", "uneven", or "both"). Default is "even"
-    - lang_code (str): Language code for character frequencies. Options: {'en', 'es', 'sv', 'de', 'fr', 'it'}
-    - freq_year (str): Year range for character frequencies. Varies by language, available in chronofidelius/unigram_frequencies.py
-    - set_frequencies (dict): Custom frequency mappings for uneven key generation
-    - set_alphabet (str): Alphabet to use for key generation
+- **key_type (str)**: The type of encryption key ("even", "uneven", or "both"). Default is "even"
+- **lang_code (str)**: Language code for character frequencies. Options: {'en', 'es', 'sv', 'de', 'fr', 'it'}
+- **freq_year (str)**: Year range for character frequencies. Varies by language, available in [chronofidelius/unigram_frequencies.py](chronofidelius/unigram_frequencies.py)
+- **set_frequencies (dict)**: Custom frequency mappings for uneven key generation
+- **set_alphabet (str)**: Alphabet to use for key generation
 
 
 ### Utilizing Custom Character Frequencies
-All uneven-type encryptions require character frequencies. If the frequencies you would like to use are not available in chronofidelius/unigram_frequencies.py, you may input your own.
+All uneven-type encryptions require character frequencies. If the frequencies you would like to use are not available in [chronofidelius/unigram_frequencies.py](chronofidelius/unigram_frequencies.py), you may input your own.
 ```python
 # Custom frequency dictionary
 custom_frequencies = {"A": 0.1, "B": 0.2, "C": 0.3, "D": 0.4}
