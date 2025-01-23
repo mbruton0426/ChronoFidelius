@@ -32,41 +32,60 @@ pip install .
 
 ## Usage
 
-### Basic Example:
+When initializing ChronoFidelius, the only required variable is some text to encrypt, either as a str or list of str.
+
+### Initalization:
 ```python
 from chronofidelius import ChronoFidelius
 
 # Initialize the ChronoFidelius object
-cf = ChronoFidelius(
-    plaintext="Hello, World!",
-    include_errors=True,
-    error_type="all",
-    set_seed=42
-)
-
-# Perform all encryption methods using included historical frequencies
-cf.encrypt_homophonic()
-
-# Access the generated ciphertext and encryption dictionary
-print(cf.pt_ct_dict)
+cf = ChronoFidelius("Hello, World!")
 ```
-### Specific Encryption Method Example
-To specify the type of encryption:
+
+Optional Parameters: initialization
+    - set_seed (int, optional): A seed value for reproducibility of random operations. Default is None
+    - include_errors (bool, optional): If True, introduces errors (e.g., additions, deletions, doubles) into
+    the plaintext. Default is False
+    - error_type (str, optional): Specifies the type of error to introduce. Valid options are:
+        - "additions": Adds random characters
+        - "deletions": Removes characters
+        - "doubles": Doubles characters
+        - "all": Randomly selects between "additions", "deletions", or "doubles"
+        Must be set if `include_errors` is True. Default is None
+    - error_frequency (float, optional): Frequency of errors in the plaintext (0–1). For example, 0.05
+    introduces errors to 5% of the text. Default is 0.05
+    - include_spacing (bool, optional): If True, retains spaces and line breaks during formatting. Default is
+    False
+    - max_length (int, optional): Maximum length of the formatted plaintext or chunks. Default is 200
+    - set_punctuation (str, optional): Specifies the set of punctuation characters to remove. Default is
+    string.punctuation
+
+### Encrypting Plaintexts
+Plaintexts can be encrypted with: 
 ```python
-cf.encrypt_homophonic(key_type="even")
+cf.encrypt_homophonic()
 ```
+This automatically encrypts plaintext(s) according to every possible option based on the default values. Plaintext(s), ciphertexts, and keys are then all available as a dictionary with:
 
-### Custom Frequency-Based Encryption Example
-You can also provide custom character frequencies
+```python
+cf.pt_ct_dict
+```
+Optional Parameters: encrypt_homophonic()
+    - key_type (str): The type of encryption key ("even", "uneven", or "both"). Default is "even"
+    - lang_code (str): Language code for character frequencies. Options: {'en', 'es', 'sv', 'de', 'fr', 'it'}
+    - freq_year (str): Year range for character frequencies. Varies by language, available in chronofidelius/unigram_frequencies.py
+    - set_frequencies (dict): Custom frequency mappings for uneven key generation
+    - set_alphabet (str): Alphabet to use for key generation
 
+
+### Utilizing Custom Character Frequencies
+All uneven-type encryptions require character frequencies. If the frequencies you would like to use are not available in chronofidelius/unigram_frequencies.py, you may input your own.
 ```python
 # Custom frequency dictionary
 custom_frequencies = {"A": 0.1, "B": 0.2, "C": 0.3, "D": 0.4}
 
-# Perform uneven encryption
-cf.encrypt_homophonic(key_type="uneven", set_frequencies=custom_frequencies)
+cf.encrypt_homophonic(set_frequencies=custom_frequencies)
 ```
-
 ---
 
 ## License
