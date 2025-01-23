@@ -86,3 +86,17 @@ cf.encrypt_homophonic(set_frequencies=custom_frequencies)
 ## License
 
 This project is licensed under the Apache License 2.0. See the [LICENSE](LICENSE) file for details.
+
+---
+
+## Citation
+
+If you use this tool in your research, please cite:
+
+```latex
+@misc{chronofidelius,
+    author = {Micaella Bruton},
+    title = {Chrono{F}idelius},
+    year = {2024}
+}
+```
