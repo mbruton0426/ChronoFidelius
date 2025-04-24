@@ -94,9 +94,10 @@ This project is licensed under the Apache License 2.0. See the [LICENSE](LICENSE
 If you use this tool in your research, please cite:
 
 ```latex
-@misc{chronofidelius,
-    author = {Micaella Bruton},
-    title = {Chrono{F}idelius},
-    year = {2024}
+@inproceedings{bruton2025statistics,
+  title     = {From Statistics to Neural Networks: Enhancing Ciphertext-Plaintext Alignment in Historical Substitution Ciphers For Automatic Key Extraction},
+  author    = {Bruton, Micaella and Megyesi, Be{\'a}ta},
+  booktitle = {Proceedings of the International Conference on Historical Cryptology (HistoCrypt)},
+  year      = {2025},
 }
 ```
