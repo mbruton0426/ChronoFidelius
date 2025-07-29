@@ -146,7 +146,8 @@ class ChronoFidelius:
                 - Each key represents a chunk index.
                 - Each value contains:
                     - "plaintext": The corresponding chunk of plaintext.
-                    - "plaintext_errors_included": The chunk with introduced errors (if applicable).
+                    - "plaintext_errors_included": The chunk including errors as characters (if applicable).
+                    - "plaintext_errors_hashed": The chunk including errors as '#' (if applicable)
 
             Raises:
             - TypeError: If `plaintext` is not a string or list of strings.
@@ -178,7 +179,7 @@ class ChronoFidelius:
             self.pt_ct_dict[str(i)]["plaintext"] = text_chunk
 
             if not error_frequency:
-                # self.pt_ct_dict[i]["plaintext_errors_hashed"] = None
+                self.pt_ct_dict[str(i)]["plaintext_errors_hashed"] = None
                 self.pt_ct_dict[str(i)]["plaintext_errors_included"] = None
 
             else:
@@ -187,14 +188,21 @@ class ChronoFidelius:
                 sorted_indexes = sorted(random.sample(range(pt_len), total_errors))
 
                 gold_pt_errors = ""
+                gold_pt_errors_hashed = ""
                 for j, char in enumerate(text_chunk):
                     if j in sorted_indexes:
                         error_choice = random.choice(self.error_types) if error_type == "all" else error_type
                         gold_pt_errors += self._make_error_choice(char, error_choice)
+
+                        if error_choice == "additions" or error_choice == "doubles":
+                            gold_pt_errors_hashed += char + "#"
+                        else:
+                            gold_pt_errors_hashed += "#"
                     else:
                         gold_pt_errors += char
+                        gold_pt_errors_hashed += char
 
-                # self.pt_ct_dict[i]["plaintext_errors_hashed"] = gold_pt
+                self.pt_ct_dict[str(i)]["plaintext_errors_hashed"] = gold_pt_errors_hashed
                 self.pt_ct_dict[str(i)]["plaintext_errors_included"] = gold_pt_errors
 
     def _make_error_choice(self, plaintext_char: str, error_type: str):
