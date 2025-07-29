@@ -5,16 +5,16 @@ ChronoFidelius is a Python library for plaintext encryption using homophonic sub
 ---
 
 ## Features
-- **Homophonic Substitution Cipher**: Encrypts plaintext with multiple cipher options for each character.
-- **Frequency-Based Key Generation**: Supports even and uneven key generation using historical unigram frequencies.
-- **Error Injection**: Introduces errors (additions, deletions, or doubles) into plaintext for obfuscation.
-- **Custom Configurations**: Control error frequency, character spacing, and more.
+- **Homophonic Substitution Cipher**: Encrypts plaintext with multiple cipher options for each character
+- **Frequency-Based Key Generation**: Supports even and uneven key generation using historical unigram frequencies
+- **Error Injection**: Introduces errors (additions, deletions, or doubles) into plaintext for obfuscation
+- **Custom Configurations**: Control error frequency, character spacing, and more
 
 ---
 
 ## Installation
 
-Install `ChronoFidelius` using `pip` (after publishing the package to PyPI):
+Install `ChronoFidelius` using `pip`:
 
 ```bash
 pip install ChronoFidelius
@@ -60,7 +60,7 @@ Plaintexts can be encrypted with:
 ```python
 cf.encrypt_homophonic()
 ```
-This automatically encrypts plaintext(s) according to every possible option based on the default values. Plaintext(s), ciphertexts, and keys are then all available as a dictionary with:
+This automatically encrypts plaintext(s) according to every possible option based on the default values. Plaintext(s), ciphertexts, and keys are then all available as a dictionary in:
 
 ```python
 cf.pt_ct_dict
@@ -94,9 +94,10 @@ This project is licensed under the Apache License 2.0. See the [LICENSE](LICENSE
 If you use this tool in your research, please cite:
 
 ```latex
-@misc{chronofidelius,
-    author = {Micaella Bruton},
-    title = {Chrono{F}idelius},
-    year = {2024}
+@inproceedings{bruton2025statistics,
+  title     = {From Statistics to Neural Networks: Enhancing Ciphertext-Plaintext Alignment in Historical Substitution Ciphers For Automatic Key Extraction},
+  author    = {Bruton, Micaella and Megyesi, Be{\'a}ta},
+  booktitle = {Proceedings of the International Conference on Historical Cryptology (HistoCrypt)},
+  year      = {2025},
 }
 ```
