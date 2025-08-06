@@ -55,6 +55,7 @@ class ChronoFidelius:
         self.pt_ct_dict = defaultdict(dict)  # holds all plaintext and ciphertext
 
         self.error_types = ["additions", "deletions", "doubles"]  # or all
+        self.errors = include_errors
         check_error_types = self.error_types + ["all"]
 
         if include_errors and error_type is None:
@@ -351,7 +352,7 @@ class ChronoFidelius:
         ]
 
         for each_doc in all_plaintexts:
-            doc = self.pt_ct_dict[each_doc]["plaintext"]
+            doc = self.pt_ct_dict[each_doc]["plaintext"] if self.errors == False else self.pt_ct_dict[each_doc]["plaintext_errors_included"]
             chars_in_doc = sorted(set(doc))
 
             for key_dict in all_key_dicts:
@@ -415,7 +416,7 @@ class ChronoFidelius:
         ]
 
         for each_doc in all_plaintexts:
-            doc = self.pt_ct_dict[each_doc]["plaintext"]
+            doc = self.pt_ct_dict[each_doc]["plaintext"] if self.errors == False else self.pt_ct_dict[each_doc]["plaintext_errors_included"]
             chars_in_doc = sorted(set(doc))
 
             for key_dict in all_key_dicts:
@@ -603,3 +604,18 @@ class ChronoFidelius:
                 ciphertext.append(let)
 
         return ciphertext if self.ct_as_int else "_".join(ciphertext)
+
+"""
+if __name__ == "__main__":
+    obj = ChronoFidelius("helloWorld", include_errors=True, error_type="additions")
+    print(obj.errors)
+    obj.encrypt_homophonic()
+
+    print(obj.pt_ct_dict["0"])
+    pt = obj.pt_ct_dict["0"]["plaintext"]
+    pt_err = obj.pt_ct_dict["0"]["plaintext_errors_included"]
+    pt_hash = obj.pt_ct_dict["0"]["plaintext_errors_hashed"]
+    ct = obj.pt_ct_dict["0"]["ciphertext_even_len_4_5opt"]
+
+    print(f"{len(pt)=}, {len(pt_err)=}, {len(pt_hash)=}, {len(ct)=}")
+"""
