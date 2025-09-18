@@ -1,5 +1,5 @@
 import unittest
-from __init__ import ChronoFidelius
+from chronofidelius.__init__ import ChronoFidelius
 
 class TestChronoFidelius(unittest.TestCase):
 
@@ -75,6 +75,50 @@ class TestChronoFidelius(unittest.TestCase):
         # Invalid key_type for encrypt_homophonic
         with self.assertRaises(ValueError):
             self.test_obj.encrypt_homophonic(key_type="invalid_key_type")
+
+    def test_encrypt_homophonic_even_mix_code(self):
+        obj = ChronoFidelius(self.plaintext, set_seed=self.seed, include_errors=False)
+        obj.encrypt_homophonic(key_type="even", mix_code=True)
+        ct_dict = obj.pt_ct_dict["key_even_len_2_1opt"]
+        # Assert vowels get different length codes than consonants
+        self.assertTrue(all(len(code[0]) == 3 for v, code in ct_dict.items() if v in obj.vowels))
+        self.assertTrue(all(len(code[0]) == 2 for c, code in ct_dict.items() if c not in obj.vowels))
+
+    def test_encrypt_homophonic_uneven_number_allocation(self):
+        freq_dict = {"A": 0.1, "B": 0.2, "C": 0.3, "D": 0.4, "E": 0.5}
+        self.test_obj.encrypt_homophonic(key_type="uneven", set_frequencies=freq_dict)
+        enc_dict = self.test_obj.pt_ct_dict["key_uneven_len_2_uneven"]
+
+        all_nums = [num for codes in enc_dict.values() for num in codes]
+        self.assertEqual(len(all_nums), len(set(all_nums)))  # no duplicates
+
+    def test_encrypt_homophonic_even_distribution(self):
+        """
+        Test that even key encryption distributes numbers correctly.
+        Checks that each character in the plaintext has codes in the key and
+        that ciphertext length matches the plaintext including errors.
+        """
+        obj = ChronoFidelius(
+            "helloWorld",
+            include_errors=True,
+            error_type="additions",
+            set_seed=9
+        )
+        obj.encrypt_homophonic(key_type="even", mix_code=True)
+
+        key_dict_name = "key_even_len_4_5opt"
+        self.assertIn(key_dict_name, obj.pt_ct_dict)
+
+        key_dict = obj.pt_ct_dict[key_dict_name]
+        pt_chunk = obj.pt_ct_dict["0"]["plaintext_errors_included"]
+
+        for char in set(pt_chunk):
+            self.assertIn(char, key_dict)
+            self.assertGreater(len(key_dict[char]), 0)
+
+        ct = obj.pt_ct_dict["0"]["ciphertext_even_len_4_5opt"]
+        self.assertEqual(len(ct), len(pt_chunk))
+
 
 if __name__ == "__main__":
     unittest.main()

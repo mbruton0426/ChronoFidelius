@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="ChronoFidelius",  # The name of your package on PyPI
-    version="1.0.3",        # Version number of your package
+    version="1.1.0",        # Version number of your package
     description="A Python library for for plaintext encryption using homophonic substitution and historical character frequencies.",
     long_description=open("README.md").read(),  # Read the contents of README.md
     long_description_content_type="text/markdown",  # Specify Markdown format for README

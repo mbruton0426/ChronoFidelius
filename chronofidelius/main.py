@@ -1,7 +1,8 @@
-from .unigram_frequencies import all_unigrams_frequencies
+# from .unigram_frequencies import all_unigrams_frequencies
 from collections import defaultdict
 import random
 import string
+import pickle
 
 class ChronoFidelius:
     """
@@ -49,6 +50,12 @@ class ChronoFidelius:
         else:
             raise TypeError(f"Invalid plaintext type. Valid types: string, list")
 
+        self.valid_lang_codes = ["cz", "nl", "en", "fr", "de", "el", "hu", "is",
+                                 "it", "la", "pl", "ru", "sl", "es", "sv"]
+        self.valid_languages = ["Czech (cz)", "Dutch (nl)", "English (en)", "French (fr)", "German (de)", "Greek (el)",
+                                "Hungarian (hu)", "Icelandic (is)", "Italian (it)", "Latin (la)", "Polish (pl)",
+                                "Russian (ru)", "Slovene (sl)", "Spanish (es)", "Swedish (sv)"]
+
         self.seed = set_seed
         self.punctuation = set_punctuation
         self.max_length = max_length
@@ -80,8 +87,8 @@ class ChronoFidelius:
 
     def encrypt_homophonic(self, key_type: str = "even", encryption_dict: dict = None,
                            nonalpha_subs: bool = None, lang_code: str = None,
-                           set_frequencies: dict = None, set_alphabet: str = string.ascii_uppercase,
-                           freq_year: str = None, ct_as_int: bool = True):
+                           set_frequencies: dict = None, set_alphabet: str = None, # string.ascii_uppercase,
+                           freq_year: str = None, ct_as_int: bool = True, mix_code: bool = False):
         """
             Encrypts plaintext using a homophonic cipher.
 
@@ -94,6 +101,8 @@ class ChronoFidelius:
             - set_alphabet (str): Alphabet to use for even key generation.
             - freq_year (str): Year to use for historical frequency data.
             - ct_as_int (bool): Whether to represent ciphertext as integers. Default is True.
+            - mix_code (bool): Valid only when ct_as_int is True. Defines whether to encrypt consonants and vowels
+            with different length integers. Default is False.
 
             Raises:
             - ValueError: If `encryption_dict` is provided without `nonalpha_subs`.
@@ -103,11 +112,41 @@ class ChronoFidelius:
 
         self.ct_as_int = ct_as_int
 
+        if not ct_as_int:
+            self.mix_code = False
+        else:
+            self.mix_code = mix_code
+            self.vowels = ('AEIOUYÀÁÂÃÄÅÆÈÉÊËÌÍÎÏÒÓÔÕÖØÙÚÛÜÝĀĂĄĒĔĘĚĪĬŌŎŐŒŮŪŬŰŸΑΕΙΟΥІАЕЫЭЮЯѠѢѦꙊꙖꟵἈἉἊἋἌἍἎἏ'
+                           'ἘἙἚἛἜἝἨἩἪἫἬἭἮἯἸἹἺἻἼἽἾἿὈὉὊὋὌὍὙὛὝὟὨὩὪὫὬὭὮὯᾹᾺῙῩ')
+
         key_types = ["even", "uneven", "both"]
 
         if encryption_dict is not None and nonalpha_subs is None:  # NEED TO HANDLE THIS, for nomenclature
             raise ValueError(f"Declared encryption_dict without declaring \
         nonalpha_subs.")
+
+        if not set_alphabet and not lang_code:
+            set_alphabet = string.ascii_uppercase
+        elif set_alphabet:
+            set_alphabet = set_alphabet
+        else: # not set_alphabet and lang_code
+            if lang_code not in self.valid_lang_codes:
+                raise ValueError(
+                    f"Invalid lang_code: '{lang_code}' is not supported. Valid options are: {self.valid_languages}")
+
+            char_freq_filepath = f"char_freqs/{lang_code}_char_freqs_dict.pkl"
+            with open(char_freq_filepath, 'rb') as f:
+                char_freqs = pickle.load(f)
+
+            if not freq_year:
+                set_alphabet = "".join(char_freqs['all'].keys()).upper()
+            else:
+                try:
+                    set_alphabet = "".join(char_freqs[freq_year].keys()).upper()
+                except:
+                    raise ValueError(
+                        f"Invalid year_range: {freq_year} not supported. Valid options for language {lang_code} are: {char_freqs.keys()}"
+                    )
 
         random.seed(self.seed)
 
@@ -281,12 +320,19 @@ class ChronoFidelius:
             self.frequency_dict = set_frequencies
 
         elif freq_year:
-            if lang_code not in all_unigrams_frequencies.keys():
-                valid_lang_codes = ", ".join(all_unigrams_frequencies.keys())
+            if lang_code not in self.valid_lang_codes:
                 raise ValueError(
-                    f"Invalid lang_code: '{lang_code}' is not supported. Valid options are: {valid_lang_codes}")
+                    f"Invalid lang_code: '{lang_code}' is not supported. Valid options are: {self.valid_languages}")
 
-            self.frequency_dict = all_unigrams_frequencies[lang_code][freq_year]
+            try:
+                char_freq_filepath = f"char_freqs/{lang_code}_char_freqs_dict.pkl"
+                with open(char_freq_filepath, 'rb') as f:
+                    char_freqs = pickle.load(f)
+                self.frequency_dict = char_freqs[freq_year]
+            except:
+                raise ValueError(
+                    f"Invalid year_range: {freq_year} not supported. Valid options for language {lang_code} are: {char_freqs.keys()}"
+                )
             self.alphabet = "".join(self.frequency_dict.keys()).upper()
         else:
             raise ValueError("Must provide either set_frequencies or freq_year for uneven key_type.")
@@ -341,10 +387,13 @@ class ChronoFidelius:
 
             for option in range(1, params["options"] + 1):
                 category_name = f"{dict_category}_{option}opt"
-                self._set_encryption_dict_even(
-                    params["bottom_n"], params["top_n"], total_numbers_needed, options=option,
-                    category_name=category_name
-                )
+                try:
+                    self._set_encryption_dict_even(
+                        params["bottom_n"], params["top_n"], total_numbers_needed, options=option,
+                        category_name=category_name
+                    )
+                except:
+                    continue
 
         all_key_dicts = [key for key in self.pt_ct_dict.keys() if key.startswith("key_even")]
         all_plaintexts = [
@@ -406,9 +455,12 @@ class ChronoFidelius:
 
         for key_len, params in key_lengths.items():
             dict_category = f"key_uneven_len_{key_len}_uneven"
-            self._set_encryption_dict_uneven(
-                params["bottom_n"], params["top_n"], total_numbers_needed, options_dict_freq, dict_category
-            )
+            try:
+                self._set_encryption_dict_uneven(
+                    params["bottom_n"], params["top_n"], total_numbers_needed, options_dict_freq, dict_category
+                )
+            except:
+                continue
 
         all_key_dicts = [key for key in self.pt_ct_dict.keys() if key.startswith("key_uneven")]
         all_plaintexts = [
@@ -452,14 +504,48 @@ class ChronoFidelius:
 
         random.seed(self.seed)
 
-        random_unique_numbers = random.sample(range(start, stop), total)
-        starting_index = 0
-        encryption_dict = {}
+        if self.mix_code == True:
+            total_vowels = len([char for char in self.alphabet if char in self.vowels]) * options
+            total_consonants = len([char for char in self.alphabet if char not in self.vowels]) * options
+            if start == 10:
+                consonant_range = random.sample([f"{i:02}" for i in range(100)], total_consonants)  # 2-digit
+                vowel_range = random.sample([f"{i:03}" for i in range(1000)], total_vowels)  # 3-digit
+            elif start == 100:
+                consonant_range = random.sample([f"{i:03}" for i in range(1000)], total_consonants)  # 3-digit
+                vowel_range = random.sample([f"{i:02}" for i in range(100)], total_vowels)  # 2-digit
+            elif start == 1000:
+                consonant_range = random.sample([f"{i:04}" for i in range(10000)], total_consonants)  # 4-digit
+                vowel_range = random.sample([f"{i:03}" for i in range(1000)], total_vowels)
 
-        for char in self.alphabet:
-            encrypts = [str(num) for num in random_unique_numbers[starting_index:starting_index + options]]
-            encryption_dict[char] = encrypts
-            starting_index += options
+            C_index = 0
+            V_index = 0
+            encryption_dict = {}
+
+            for char in self.alphabet:
+                if char in self.vowels:
+                    encrypts = [str(num) for num in vowel_range[V_index:V_index + options]]
+                    V_index += options
+                else:
+                    encrypts = [str(num) for num in consonant_range[C_index:C_index + options]]
+                    C_index += options
+
+                encryption_dict[char] = encrypts
+
+        else: # self.mix_code == False
+            if start == 10:
+                random_unique_numbers = random.sample([f"{i:02}" for i in range(100)], total)
+            elif start == 100:
+                random_unique_numbers = random.sample([f"{i:03}" for i in range(1000)], total)  # random.sample(range(start, stop), total)
+            elif start == 1000:
+                random_unique_numbers = random.sample([f"{i:04}" for i in range(10000)], total)
+
+            starting_index = 0
+            encryption_dict = {}
+
+            for char in self.alphabet:
+                encrypts = [str(num) for num in random_unique_numbers[starting_index:starting_index + options]]
+                encryption_dict[char] = encrypts
+                starting_index += options
 
         self.pt_ct_dict[category_name] = encryption_dict
 
@@ -486,22 +572,75 @@ class ChronoFidelius:
 
         random.seed(self.seed)
 
-        random_unique_numbers = random.sample(range(start, stop), total)
-        starting_index = 0
-        encryption_dict = {}
+        if self.mix_code == True:
+            total_vowels = 0
+            total_consonants = 0
 
-        for char in self.alphabet:
-            freq = self.frequency_dict.get(char.lower()) or self.frequency_dict.get(char.upper())
-            if freq is None:
-                raise KeyError(f"Frequency for character '{char}' not found in frequency dictionary.")
+            for char in self.alphabet:
+                freq = self.frequency_dict.get(char.lower()) or self.frequency_dict.get(char.upper())
+                if freq is None:
+                    raise KeyError(f"Frequency for character '{char}' not found in frequency dictionary.")
 
-            if freq not in options:
-                raise KeyError(f"Frequency '{freq}' not found in options dictionary.")
-            num_option = options[freq]
+                if freq not in options:
+                    raise KeyError(f"Frequency '{freq}' not found in options dictionary.")
 
-            encrypts = [str(num) for num in random_unique_numbers[starting_index:starting_index + num_option]]
-            encryption_dict[char] = encrypts
-            starting_index += num_option
+                num_option = options[freq]
+                if char in self.vowels:
+                    total_vowels += num_option
+                else:
+                    total_consonants += num_option
+
+            if start == 10:
+                consonant_range = random.sample([f"{i:02}" for i in range(100)], total_consonants)  # 2-digit
+                vowel_range = random.sample([f"{i:03}" for i in range(1000)], total_vowels)     # 3-digit
+            elif start == 100:
+                consonant_range = random.sample([f"{i:03}" for i in range(1000)], total_consonants)  # 3-digit
+                vowel_range = random.sample([f"{i:02}" for i in range(100)], total_vowels)       # 2-digit
+            elif start == 1000:
+                consonant_range = random.sample([f"{i:04}" for i in range(10000)], total_consonants)  # 4-digit
+                vowel_range = random.sample([f"{i:03}" for i in range(1000)], total_vowels)       # 3-digit
+
+            C_index = 0
+            V_index = 0
+            encryption_dict = {}
+
+            for char in self.alphabet:
+                freq = self.frequency_dict.get(char.lower()) or self.frequency_dict.get(char.upper())
+                num_option = options[freq]
+
+                if char in self.vowels:
+                    encrypts = [str(num) for num in vowel_range[V_index:V_index + num_option]]
+                    V_index += num_option
+                else:
+                    encrypts = [str(num) for num in consonant_range[C_index:C_index + num_option]]
+                    C_index += num_option
+
+                encryption_dict[char] = encrypts
+
+        else: # (self.mix_code == False)
+            if start == 10:
+                random_unique_numbers = random.sample([f"{i:02}" for i in range(100)], total)
+            elif start == 100:
+                random_unique_numbers = random.sample([f"{i:03}" for i in range(1000)], total) # random.sample(range(start, stop), total)
+            elif start == 1000:
+                random_unique_numbers = random.sample([f"{i:04}" for i in range(10000)], total)
+
+            starting_index = 0
+            encryption_dict = {}
+
+            for char in self.alphabet:
+                freq = self.frequency_dict.get(char.lower()) or self.frequency_dict.get(char.upper())
+                if freq is None:
+                    raise KeyError(f"Frequency for character '{char}' not found in frequency dictionary.")
+
+                if freq not in options:
+                    raise KeyError(f"Frequency '{freq}' not found in options dictionary.")
+
+                num_option = options[freq]
+
+                encrypts = [str(num) for num in random_unique_numbers[starting_index:starting_index + num_option]]
+                encryption_dict[char] = encrypts
+                starting_index += num_option
 
         self.pt_ct_dict[category_name] = encryption_dict
 
@@ -605,11 +744,13 @@ class ChronoFidelius:
 
         return ciphertext if self.ct_as_int else "_".join(ciphertext)
 
-"""
+
 if __name__ == "__main__":
-    obj = ChronoFidelius("helloWorld", include_errors=True, error_type="additions")
+    obj = ChronoFidelius("helloWorld", include_errors=True, error_type="additions", set_seed=9)
     print(obj.errors)
-    obj.encrypt_homophonic()
+
+    obj.encrypt_homophonic(lang_code="en", mix_code=True)
+    print(obj.alphabet)
 
     print(obj.pt_ct_dict["0"])
     pt = obj.pt_ct_dict["0"]["plaintext"]
@@ -618,4 +759,3 @@ if __name__ == "__main__":
     ct = obj.pt_ct_dict["0"]["ciphertext_even_len_4_5opt"]
 
     print(f"{len(pt)=}, {len(pt_err)=}, {len(pt_hash)=}, {len(ct)=}")
-"""
