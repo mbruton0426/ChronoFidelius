@@ -744,7 +744,7 @@ class ChronoFidelius:
 
         return ciphertext if self.ct_as_int else "_".join(ciphertext)
 
-
+"""
 if __name__ == "__main__":
     obj = ChronoFidelius("helloWorld", include_errors=True, error_type="additions", set_seed=9)
     print(obj.errors)
@@ -759,3 +759,4 @@ if __name__ == "__main__":
     ct = obj.pt_ct_dict["0"]["ciphertext_even_len_4_5opt"]
 
     print(f"{len(pt)=}, {len(pt_err)=}, {len(pt_hash)=}, {len(ct)=}")
+"""
