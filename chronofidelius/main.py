@@ -3,6 +3,7 @@ from collections import defaultdict
 import random
 import string
 import pickle
+from importlib import resources
 
 class ChronoFidelius:
     """
@@ -134,8 +135,12 @@ class ChronoFidelius:
                 raise ValueError(
                     f"Invalid lang_code: '{lang_code}' is not supported. Valid options are: {self.valid_languages}")
 
-            char_freq_filepath = f"char_freqs/{lang_code}_char_freqs_dict.pkl"
-            with open(char_freq_filepath, 'rb') as f:
+            # char_freq_filepath = f"char_freqs/{lang_code}_char_freqs_dict.pkl"
+            # with open(char_freq_filepath, 'rb') as f:
+              #  char_freqs = pickle.load(f)
+
+            char_freq_filepath = f"{lang_code}_char_freqs_dict.pkl"
+            with resources.open_binary('chronofidelius.char_freqs', char_freq_filepath) as f:
                 char_freqs = pickle.load(f)
 
             if not freq_year:
@@ -325,9 +330,14 @@ class ChronoFidelius:
                     f"Invalid lang_code: '{lang_code}' is not supported. Valid options are: {self.valid_languages}")
 
             try:
-                char_freq_filepath = f"char_freqs/{lang_code}_char_freqs_dict.pkl"
-                with open(char_freq_filepath, 'rb') as f:
+                # char_freq_filepath = f"char_freqs/{lang_code}_char_freqs_dict.pkl"
+                # with open(char_freq_filepath, 'rb') as f:
+                  #   char_freqs = pickle.load(f)
+
+                char_freq_filepath = f"{lang_code}_char_freqs_dict.pkl"
+                with resources.open_binary('chronofidelius.char_freqs', char_freq_filepath) as f:
                     char_freqs = pickle.load(f)
+
                 self.frequency_dict = char_freqs[freq_year]
             except:
                 raise ValueError(

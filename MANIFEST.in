@@ -7,3 +7,5 @@ include LICENSE
 # Include all Python files in the source directory
 recursive-include chronofidelius *.py
 
+# Include all .pkl files in the char_freqs folder
+recursive-include chronofidelius/char_freqs *.pkl
